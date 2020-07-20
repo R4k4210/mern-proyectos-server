@@ -36,8 +36,8 @@ exports.obtenerTareas = async (req, res) => {
 
     try {
         
-        const {proyecto} = req.body;
-
+        const {proyecto} = req.query; //Cuando se envia desde el frontend como params: { param }, se lee con request.query
+        
         const existeProyecto = await Proyecto.findById(proyecto);
         if(!existeProyecto){
             return res.status(404).json({msg: "Proyecto no encontrado"});
@@ -48,7 +48,7 @@ exports.obtenerTareas = async (req, res) => {
             return res.status(401).json({msg: "No autorizado"});
         }
 
-        const tareas = await Tarea.find({ proyecto })
+        const tareas = await Tarea.find({ proyecto }).sort({ creado: -1});
         res.json({ tareas });
     } catch (error) {
         console.log(error);
@@ -77,9 +77,8 @@ exports.actualizarTarea = async (req, res) => {
         //Objeto con la nueva información
         const nuevaTarea = {};
 
-        if(nombre) nuevaTarea.nombre = nombre;
-
-        if(estado) nuevaTarea.estado = estado;
+        nuevaTarea.nombre = nombre;
+        nuevaTarea.estado = estado;
 
         tarea = await Tarea.findOneAndUpdate({_id: req.params.id}, nuevaTarea, {new: true});
         res.json({tarea});
@@ -94,7 +93,7 @@ exports.eliminarTarea = async (req, res) => {
     
     try {
 
-        const {proyecto} = req.body;
+        const {proyecto} = req.query;
 
         let tarea = await Tarea.findById(req.params.id);
         if(!tarea){
